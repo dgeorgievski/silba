@@ -2,17 +2,10 @@ package main
 
 import (
   "os"
-  //"fmt"
-  //"time"
   "silba/commands"
   "github.com/codegangsta/cli"
   "github.com/docker/machine/log"
 )
-
-
-
-//var propts = map[string]int{"cpu": 1, "mem": 2, "disk": 3}
-//var pubopts = map[string]int{"file": 1, "zmq": 2, "indb": 3}
 
 func cmdNotFound(c *cli.Context, command string) {
 	log.Fatalf(
@@ -28,20 +21,14 @@ var os_args []string
 
 func main() {
   os_args = os.Args
-  //fmt.Println("Args 1: ", os_args)
-
   app := cli.NewApp()
   app.Name = "silba"
   app.Usage = "streaming metrics"
   app.Version = "1.0.0"
-//  app.Commands = commands.Commands
-  //app.CommandNotFound = cmdNotFound
 
   app.Action = func (c *cli.Context) {
     log.Infof("No commands given. Using default.")
     commands.InitProbes(c)
-    //os_args = append(os_args, "zmq")
-    //fmt.Println("Args", os_args)
   }
 
   app.Flags = []cli.Flag {
@@ -71,7 +58,6 @@ func main() {
           },
         }
 
-  //fmt.Println("Args 2: ", os_args)
   app.Run(os_args)
 
 }
