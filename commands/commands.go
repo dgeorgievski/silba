@@ -7,16 +7,32 @@ import (
   "os"
   "time"
   "github.com/codegangsta/cli"
+  "gopkg.in/vmihailenco/msgpack.v2"
   "silba/probes"
+  "silba/pub"
 )
 
-func ProcessResults(res <-chan probes.Result, tags []string) {
+func ProcessResults(res <-chan probes.Result, tags []string, zmqch chan<- []byte) {
   for {
     select {
     case r := <-res:
       s := r.GetTypeWithTags(tags)
 
       fmt.Printf("%v\n", s)
+      b, err := msgpack.Marshal(&s)
+	    if err != nil {
+		     fmt.Println(err)
+      }else{
+        zmqch <- b
+      }
+
+      var v probes.Probe
+	    err = msgpack.Unmarshal(b, &v)
+	    if err != nil {
+		    panic(err)
+	     }
+
+      fmt.Printf("Unpack: %#v\n", v)
     }
   }
 }
@@ -40,7 +56,9 @@ var InitProbes =  func (c *cli.Context) {
   quit := make(chan bool)
   res := make(chan probes.Result)
 
-  go ProcessResults(res, []string{"pt101"})
+  fmt.Printf("zmq: %v", pub.ZeroMQPub)
+  zmq := pub.ZeroMQPub.PublishData(quit)
+  go ProcessResults(res, []string{"pt101"}, zmq)
 
   var SelProbes []chan time.Time
 
